@@ -1,0 +1,44 @@
+{
+  "active_provider": "openai",
+  "output": {
+    "dir": ".",
+    "return_inline": true,
+    "inline_max_px": 1024
+  },
+  "providers": {
+    "openai": {
+      "default_size": "1024x1024",
+      "timeout": 120.0,
+      "base_url": "https://api.openai.com/v1",
+      "api_key": "",
+      "model": "dall-e-3",
+      "response_format": "b64_json"
+    },
+    "a1111": {
+      "default_size": "1024x1024",
+      "timeout": 300.0,
+      "base_url": "http://127.0.0.1:7860",
+      "steps": 25,
+      "cfg_scale": 7.0,
+      "sampler_name": "DPM++ 2M"
+    },
+    "comfyui": {
+      "default_size": "1024x1024",
+      "timeout": 300.0,
+      "base_url": "http://127.0.0.1:8188",
+      "workflow_path": "workflows/comfyui_txt2img.json",
+      "edit_workflow_path": "workflows/comfyui_img2img.json",
+      "checkpoint": "",
+      "steps": 25,
+      "cfg_scale": 7.0
+    },
+    "unsloth": {
+      "default_size": "1024x1024",
+      "timeout": 300.0,
+      "base_url": "http://127.0.0.1:8888",
+      "api_key": "",
+      "steps": null,
+      "guidance": null
+    }
+  }
+}

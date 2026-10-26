@@ -94,12 +94,20 @@ class OutputConfig(BaseModel):
     dir: str = "."
     return_inline: bool = True
     inline_max_px: int = Field(default=1024, ge=128, le=4096)
+    # Where the desktop app's Playground saves; unlike Claude it has no session folder of its own.
+    playground_dir: str = "~/Pictures/ImgSwitch"
+
+
+class UIConfig(BaseModel):
+    language: Literal["en", "zh-CN"] = "en"
+    theme: Literal["system", "light", "dark"] = "system"
 
 
 class AppConfig(BaseModel):
     active_provider: ProviderName = "openai"
     output: OutputConfig = Field(default_factory=OutputConfig)
     providers: ProvidersConfig = Field(default_factory=ProvidersConfig)
+    ui: UIConfig = Field(default_factory=UIConfig)
 
     @model_validator(mode="after")
     def _active_is_enabled(self) -> AppConfig:
@@ -117,6 +125,11 @@ def config_path() -> Path:
     """Resolve the config file location independently of the current working directory."""
     env = os.environ.get("IMGSWITCH_CONFIG")
     return Path(env).expanduser().resolve() if env else PROJECT_ROOT / "config.json"
+
+
+def data_dir() -> Path:
+    """Folder for the generation history and Playground uploads: next to the config file."""
+    return config_path().parent
 
 
 def resolve_project_path(p: str) -> Path:

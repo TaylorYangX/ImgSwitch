@@ -28,6 +28,7 @@ class InputImage:
     filename: str
     width: int
     height: int
+    path: str = ""  # where it was loaded from, for the history
 
     def b64(self) -> str:
         return base64.b64encode(self.data).decode()

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
-import logging
 from typing import Annotated
 
 from mcp.server.mcpserver import MCPServer
@@ -11,21 +9,10 @@ from mcp.server.mcpserver.exceptions import ToolError
 from mcp_types import ImageContent, TextContent
 from pydantic import Field
 
-from imgswitch.config import (
-    PROVIDER_NAMES,
-    AppConfig,
-    ProviderName,
-    config_path,
-    load_config,
-    parse_size,
-    resolve_output_dir,
-)
-from imgswitch.inputs import fit_size, load_input_images
-from imgswitch.output import inline_content, save_images
-from imgswitch.providers import PROVIDERS, GenerationRequest, ProviderError
-from imgswitch.router import get_provider
-
-logger = logging.getLogger(__name__)
+from imgswitch import service
+from imgswitch.config import PROVIDER_NAMES, AppConfig, ProviderName, config_path, load_config
+from imgswitch.output import inline_content
+from imgswitch.providers import PROVIDERS
 
 mcp = MCPServer(
     "imgswitch",
@@ -124,52 +111,27 @@ async def generate_image(
     the saved file paths plus previews."""
     cfg = _load_config()
     try:
-        backend = get_provider(cfg, provider)
-        inputs = load_input_images(input_images or [])
-        if size or not inputs:
-            width, height = parse_size(size or backend.config.default_size)
-        else:
-            width, height = fit_size(inputs[0].width, inputs[0].height, *parse_size(backend.config.default_size))
-    except (ProviderError, ValueError) as e:
-        raise ToolError(str(e)) from e
-    # Create the folder first so a bad path fails before a (possibly paid) generation.
-    out_dir = resolve_output_dir(output_dir or cfg.output.dir)
-    try:
-        out_dir.mkdir(parents=True, exist_ok=True)
-    except OSError as e:
-        raise ToolError(f"Cannot create output folder {out_dir}: {e}") from e
-    try:
-        req = GenerationRequest(
+        result = await service.generate(
+            cfg,
             prompt=prompt,
-            width=width,
-            height=height,
+            input_images=input_images,
+            strength=strength,
+            size=size,
             negative_prompt=negative_prompt,
             n=n,
             seed=seed,
-            images=inputs,
-            strength=strength,
-            auto_size=bool(inputs) and not size,
+            provider=provider,
+            output_dir=output_dir,
+            filename=filename,
+            source="claude",
         )
-        logger.info(
-            "Generating %d image(s) at %dx%d from %d input image(s) via %s", n, width, height, len(inputs), backend.name
-        )
-        images = await backend.generate(req)
-    except (ProviderError, ValueError) as e:
+    except service.GenerationError as e:
         raise ToolError(str(e)) from e
-
-    try:
-        paths = save_images(images, prompt, out_dir, filename)
-    except OSError as e:
-        raise ToolError(f"Could not save images to {out_dir}: {e}") from e
-    source = f" from {len(inputs)} input image(s)" if inputs else ""
-    lines = [
-        f"Generated {len(paths)} image(s){source} with {backend.label} ({backend.model_label}) at {width}x{height}:"
-    ]
-    lines += [f"- {p}" for p in paths]
-    result: list[TextContent | ImageContent] = [TextContent(type="text", text="\n".join(lines))]
+    lines = [result.summary()] + [f"- {p}" for p in result.paths]
+    content: list[TextContent | ImageContent] = [TextContent(type="text", text="\n".join(lines))]
     if cfg.output.return_inline:
-        result += [inline_content(img, cfg.output.inline_max_px) for img in images]
-    return result
+        content += [inline_content(img, cfg.output.inline_max_px) for img in result.images]
+    return content
 
 
 @mcp.tool(structured_output=False)
@@ -179,20 +141,15 @@ async def list_backends() -> str:
     generate_image when the user asks for a specific model or backend, or wants to edit an image."""
     cfg = _load_config()
     enabled = cfg.enabled_providers()
-    backends = [get_provider(cfg, name) for name in enabled]
-    statuses, image_inputs = await asyncio.gather(
-        asyncio.gather(*(b.health_check() for b in backends)),
-        # A malformed answer from one backend shouldn't hide every backend's status.
-        asyncio.gather(*(b.image_input() for b in backends), return_exceptions=True),
-    )
+    backends = await service.describe_backends(cfg, enabled)
 
     lines = [f"Active backend: {cfg.active_provider} (used when generate_image is called without provider)", ""]
-    for backend, status, image_input in zip(backends, statuses, image_inputs):
-        active = " [active]" if backend.name == cfg.active_provider else ""
-        state = "available" if status.ok else "unavailable"
-        lines.append(f"- {backend.name}{active}: {backend.label}, {state}. {status.detail}")
-        lines.append(f"  {backend.description}")
-        lines.append(f"  Image input: {image_input if isinstance(image_input, str) else 'unknown'}")
+    for b in backends:
+        active = " [active]" if b["active"] else ""
+        state = "available" if b["ok"] else "unavailable"
+        lines.append(f"- {b['name']}{active}: {b['label']}, {state}. {b['detail']}")
+        lines.append(f"  {b['description']}")
+        lines.append(f"  Image input: {b['image_input']}")
     disabled = [name for name in PROVIDER_NAMES if name not in enabled]
     if disabled:
         lines += ["", f"Disabled in the dashboard (can't be used): {', '.join(disabled)}"]

@@ -40,7 +40,12 @@ def _load(p: str) -> InputImage:
     except (UnidentifiedImageError, OSError) as e:
         raise ValueError(f"Input image {path} is not a readable image: {e}") from None
     return InputImage(
-        data=data, mime_type=KEEP_FORMATS[fmt], filename=f"{path.stem}.{fmt.lower()}", width=width, height=height
+        data=data,
+        mime_type=KEEP_FORMATS[fmt],
+        filename=f"{path.stem}.{fmt.lower()}",
+        width=width,
+        height=height,
+        path=str(path),
     )
 
 

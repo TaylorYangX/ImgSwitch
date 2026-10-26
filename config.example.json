@@ -3,10 +3,12 @@
   "output": {
     "dir": ".",
     "return_inline": true,
-    "inline_max_px": 1024
+    "inline_max_px": 1024,
+    "playground_dir": "~/Pictures/ImgSwitch"
   },
   "providers": {
     "openai": {
+      "enabled": true,
       "default_size": "1024x1024",
       "timeout": 120.0,
       "base_url": "https://api.openai.com/v1",
@@ -15,6 +17,7 @@
       "response_format": "b64_json"
     },
     "a1111": {
+      "enabled": true,
       "default_size": "1024x1024",
       "timeout": 300.0,
       "base_url": "http://127.0.0.1:7860",
@@ -23,6 +26,7 @@
       "sampler_name": "DPM++ 2M"
     },
     "comfyui": {
+      "enabled": true,
       "default_size": "1024x1024",
       "timeout": 300.0,
       "base_url": "http://127.0.0.1:8188",
@@ -33,6 +37,7 @@
       "cfg_scale": 7.0
     },
     "unsloth": {
+      "enabled": true,
       "default_size": "1024x1024",
       "timeout": 300.0,
       "base_url": "http://127.0.0.1:8888",
@@ -40,5 +45,9 @@
       "steps": null,
       "guidance": null
     }
+  },
+  "ui": {
+    "language": "en",
+    "theme": "system"
   }
 }

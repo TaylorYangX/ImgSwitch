@@ -4,3 +4,11 @@ outputs/
 __pycache__/
 *.pyc
 .pytest_cache/
+history.jsonl
+uploads/
+imgswitch/gui/dist/
+app/node_modules/
+app/src-tauri/target/
+app/src-tauri/gen/
+app-backend.log
+*.Zone.Identifier

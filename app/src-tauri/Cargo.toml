@@ -1,0 +1,24 @@
+[package]
+name = "imgswitch"
+version = "0.1.0"
+description = "ImgSwitch: image backends for Claude Code"
+edition = "2021"
+rust-version = "1.80"
+
+[lib]
+name = "imgswitch_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-single-instance = "2"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

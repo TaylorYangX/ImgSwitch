@@ -271,3 +271,19 @@ async def test_missing_input_image_fails_before_generating(config_file, tmp_path
 
     assert result.is_error and "Input image not found" in result.content[0].text
     assert not route.called
+
+
+@respx.mock
+async def test_tool_calls_are_recorded_in_history(config_file, png):
+    from imgswitch import history
+
+    use_provider(config_file, "a1111", return_inline=False)
+    respx.post(TXT2IMG).respond(json={"images": [b64(png)]})
+
+    async with Client(mcp) as client:
+        result = await client.call_tool("generate_image", {"prompt": "a lighthouse", "seed": 9})
+
+    [entry] = history.list_entries()[0]
+    assert (entry["source"], entry["backend"], entry["prompt"], entry["seed"]) == ("claude", "a1111", "a lighthouse", 9)
+    assert entry["outputs"] == [result.content[0].text.splitlines()[1].removeprefix("- ")]
+    assert entry["cwd"] == str(Path.cwd())

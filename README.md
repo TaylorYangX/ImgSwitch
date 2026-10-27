@@ -1,6 +1,6 @@
 # ImgSwitch
 
-ImgSwitch gives Claude Code a `generate_image` tool through the [Model Context Protocol](https://modelcontextprotocol.io) (MCP). A [desktop app](#desktop-app) lets you choose which image backend does the work and change its settings without touching Claude Code again. It also has a Playground for trying models yourself and a History of every image ImgSwitch made.
+ImgSwitch gives Claude Code, and [other coding agents](#use-with-other-agents) such as Codex, OpenCode and Antigravity, a `generate_image` tool through the [Model Context Protocol](https://modelcontextprotocol.io) (MCP). A [desktop app](#desktop-app) lets you choose which image backend does the work and change its settings without touching the agents again. It also has a Playground for trying models yourself and a History of every image ImgSwitch made.
 
 | Backend | Kind | What ImgSwitch calls |
 |---|---|---|
@@ -20,7 +20,8 @@ Besides generating from a text prompt, the tool can [edit an existing image](#ed
 3. [Desktop app](#desktop-app)
 4. [Configure a backend](#configure-a-backend)
 5. [Connect to Claude Code](#connect-to-claude-code)
-6. [Using it in Claude Code](#using-it-in-claude-code)
+6. [Use with other agents](#use-with-other-agents)
+7. [Using it in Claude Code](#using-it-in-claude-code)
 7. [Troubleshooting](#troubleshooting)
 8. [Configuration reference](#configuration-reference)
 9. [ComfyUI workflows](#comfyui-workflows)
@@ -78,10 +79,10 @@ ImgSwitch's settings live in a desktop app in the style of [CC Switch](https://g
 
 | Page | What it's for |
 |---|---|
-| **Backends** | One card per backend: status, current model, and whether it accepts input images. **Make active** sets the backend Claude uses by default, **Available to Claude** hides a backend from Claude, **Test** checks it, and **Edit** opens its settings. |
+| **Backends** | One card per backend: status, current model, and whether it accepts input images. **Make active** sets the backend agents use by default, **Available to agents** hides a backend from them, **Test** checks it, and **Edit** opens its settings. |
 | **Playground** | Generate or edit images yourself with any available backend: prompt, size, count, seed, and input images (choose files or drop them on the window). Results are saved to the Playground folder and listed in History. |
-| **History** | Every image ImgSwitch made, from Claude Code or the Playground, with its prompt, backend, model, seed and session folder. Search and filter it, show a file in Explorer, copy its path, or **Edit in Playground**. Removing an entry never deletes the file. |
-| **Claude Code** | Whether ImgSwitch is registered (with a **Register** button if not), whether its tools are allowed without prompts (**Allow without asking**), and every running ImgSwitch server, flagging those that need `/mcp` → Reconnect after an update. |
+| **History** | Every image ImgSwitch made, from your agents or the Playground, with the agent, prompt, backend, model, seed and session folder. Search and filter it, show a file in Explorer, copy its path, or **Edit in Playground**. Removing an entry never deletes the file. |
+| **Agents** | Claude Code, Codex, OpenCode and Antigravity: whether ImgSwitch is registered with each (with a **Register** button if not) and the config to add by hand; whether Claude Code may run the tools without prompts (**Allow without asking**); and every running ImgSwitch server with the agent that started it, flagging those that need reloading after an update. See [Use with other agents](#use-with-other-agents). |
 | **Settings** | Language, theme, output folders, inline previews, the config and history files, **Clear history**, and version info. |
 
 The app is a [Tauri](https://tauri.app) shell (in `app/`) around the same Python code. When it opens, it starts its own backend, `.venv/bin/python main.py --gui --app` on a free local port, and stops it when you close the window. Claude Code's MCP server is a separate process and isn't affected. There is no tray icon, because WSLg can't show one; the sidebar's switcher takes its place.
@@ -102,7 +103,7 @@ Build the `.deb` and install it:
 cd app
 npm install
 npm run tauri build -- --bundles deb
-sudo apt install ./src-tauri/target/release/bundle/deb/ImgSwitch_0.1.0_amd64.deb
+sudo apt install ./src-tauri/target/release/bundle/deb/ImgSwitch_0.2.0_amd64.deb
 ```
 
 Start **ImgSwitch** from the Start menu or run `imgswitch`. Under WSL, the Start menu entry sits in the Ubuntu folder, next to other WSLg apps such as CC Switch. Remove it with `sudo apt remove img-switch`.
@@ -131,7 +132,7 @@ These files sit in the ImgSwitch folder, or next to the config file if `IMGSWITC
 Open the app (or the browser version) and go to **Backends**:
 
 - **Make active** chooses the backend Claude uses by default. The sidebar's switcher does the same from any page. The dot shows whether a backend is reachable (green = OK, red = problem, grey = checking), and the line next to it says why and which model it runs.
-- **Available to Claude** decides which backends Claude may use at all. Switch off a backend you don't want used, e.g. a paid cloud API, or a local server you rarely start. Claude won't see it in `list_backends`, and a call that names it is refused. The active backend can't be switched off; making another backend active switches it back on. See [Choosing a backend](#choosing-a-backend).
+- **Available to agents** decides which backends agents may use at all. Switch off a backend you don't want used, e.g. a paid cloud API, or a local server you rarely start. Agents won't see it in `list_backends`, and a call that names it is refused. The active backend can't be switched off; making another backend active switches it back on. See [Choosing a backend](#choosing-a-backend).
 - **Edit** opens the backend's settings. Every change saves to `config.json` immediately, and the sidebar shows "All changes saved". An invalid value shows "Not saved" with the reason, and the file keeps its last valid state.
 - **Test** checks the values currently on screen, even unsaved ones.
 
@@ -180,8 +181,8 @@ Set the URL (default `http://127.0.0.1:8188`). Click **Load list** to fill the c
 
 | Field | Notes |
 |---|---|
-| Output folder for Claude Code | Default output location. Relative paths are inside the folder Claude Code is working in: `.` (default) saves into that folder itself, and `images` saves into an `images/` subfolder of it. Set an absolute path such as `~/Pictures/ai` to collect every image in one place, whatever project you're in. Claude can override this per request (see [`output_dir`](#using-it-in-claude-code)). |
-| Return images inline | When on, Claude receives a preview of each image. Turn it off to return file paths only, which uses less of Claude's context. |
+| Output folder for agents | Default output location. Relative paths are inside the folder the agent is working in: `.` (default) saves into that folder itself, and `images` saves into an `images/` subfolder of it. Set an absolute path such as `~/Pictures/ai` to collect every image in one place, whatever project you're in. Claude can override this per request (see [`output_dir`](#using-it-in-claude-code)). |
+| Show images to the agent | When on, the agent receives a preview of each image. Turn it off to return file paths only, which uses less of its context (and helps agents that can't handle image results). |
 | Preview long edge | Larger images are downscaled for the preview only; the file on disk keeps full size. |
 | Playground folder | Where the Playground saves, default `~/Pictures/ImgSwitch`. It has no session folder of its own. |
 
@@ -189,7 +190,7 @@ Set the URL (default `http://127.0.0.1:8188`). Click **Load list** to fill the c
 
 ## Connect to Claude Code
 
-The app's **Claude Code** page checks all of this for you. It shows whether ImgSwitch is registered and can register it in user scope, can allow the tools without prompts, and lists sessions that need reconnecting. The steps below do the same by hand.
+The app's **Agents** page checks all of this for you. It shows whether ImgSwitch is registered and can register it in user scope, can allow the tools without prompts, and lists sessions that need reconnecting. The steps below do the same by hand.
 
 ### Step 1: Register the server
 
@@ -208,7 +209,7 @@ Added stdio MCP server imgswitch with command: /home/you/.../ImgSwitch/.venv/bin
 
 Notes:
 
-- **Use absolute paths.** Claude Code starts the server from whatever project you have open, so a relative path like `main.py` won't be found. The app's Claude Code page shows the same command with your paths filled in.
+- **Use absolute paths.** Claude Code starts the server from whatever project you have open, so a relative path like `main.py` won't be found. The app's Agents page shows the same command with your paths filled in.
 - **Don't paste placeholder paths** such as `/path/to/ImgSwitch`. Claude Code accepts any path when you add a server and only fails when it tries to start it (see [ENOENT](#failed-to-connect)).
 - **Everything after `--`** is the command Claude Code runs. Options for `claude mcp add` itself, such as `--scope` and `-e`, go **before** the `--`. Put `-e` *after* the server name: `-e` accepts several values, so `-e KEY=value imgswitch` treats `imgswitch` as another variable and fails with `missing required argument 'commandOrUrl'`.
 - **Using uv instead** of the venv interpreter also works, as long as `uv` is on the `PATH` Claude Code sees:
@@ -294,7 +295,7 @@ Then start a new Claude Code session (step 4 above).
 
 ### Allow the tool without a prompt (optional)
 
-The first time Claude calls `generate_image` or `list_backends`, Claude Code asks for permission. To allow them permanently, click **Allow without asking** on the app's Claude Code page, choose the *don't ask again* option at that prompt, or add this to `~/.claude/settings.json`:
+The first time Claude calls `generate_image` or `list_backends`, Claude Code asks for permission. To allow them permanently, click **Allow without asking** on the app's Agents page, choose the *don't ask again* option at that prompt, or add this to `~/.claude/settings.json`:
 
 ```json
 {
@@ -303,6 +304,63 @@ The first time Claude calls `generate_image` or `list_backends`, Claude Code ask
   }
 }
 ```
+
+---
+
+## Use with other agents
+
+ImgSwitch is a standard MCP server, so any coding agent that supports MCP can use it, not just Claude Code. The app's **Agents** page knows four of them. For each, it shows whether ImgSwitch is registered, registers it with one click (backing up the agent's config file first), and shows the config to add by hand.
+
+| Agent | Config file (in WSL / Linux) | After registering |
+|---|---|---|
+| Claude Code | `~/.claude.json` (via `claude mcp add`, see above) | New session, or `/mcp` → Reconnect |
+| Codex | `~/.codex/config.toml` | Start a new Codex session |
+| OpenCode | `~/.config/opencode/opencode.jsonc` (via `opencode mcp add --global`) | Restart OpenCode; `opencode mcp list` shows whether it connects |
+| Antigravity (app, IDE and CLI) | `~/.gemini/config/mcp_config.json` | Settings → Customizations → Installed MCP Servers → Refresh |
+
+Replace `<ImgSwitch>` below with the absolute path of this folder. The Agents page shows each snippet with the real path filled in.
+
+**Codex** (`~/.codex/config.toml`). Raise the tool timeout: Codex stops waiting after 60 seconds by default, and local models often take longer.
+
+```toml
+[mcp_servers.imgswitch]
+command = "<ImgSwitch>/.venv/bin/python"
+args = ["<ImgSwitch>/main.py"]
+startup_timeout_sec = 30
+tool_timeout_sec = 600
+```
+
+**OpenCode** (`~/.config/opencode/opencode.jsonc`), or run `opencode mcp add imgswitch --global -- <ImgSwitch>/.venv/bin/python <ImgSwitch>/main.py`:
+
+```jsonc
+{
+  "mcp": {
+    "servers": {
+      "imgswitch": { "type": "local", "command": ["<ImgSwitch>/.venv/bin/python", "<ImgSwitch>/main.py"] }
+    }
+  }
+}
+```
+
+**Antigravity** (`~/.gemini/config/mcp_config.json`, shared by the Antigravity app, IDE and CLI):
+
+```json
+{
+  "mcpServers": {
+    "imgswitch": { "command": "<ImgSwitch>/.venv/bin/python", "args": ["<ImgSwitch>/main.py"] }
+  }
+}
+```
+
+**Agents running on Windows rather than in WSL** (for example the Windows build of an agent) can start the server through WSL. Use `"command": "wsl.exe"` with the Linux paths as arguments: `"args": ["<ImgSwitch>/.venv/bin/python", "<ImgSwitch>/main.py"]`. Images are still saved inside WSL, so set an absolute output folder there, e.g. under `/mnt/c/Users/<you>/Pictures`, to find them in Windows.
+
+How it behaves with other agents:
+
+- **Where images go.** Relative output folders resolve against the folder the agent starts the server in, which is the project folder for Claude Code and OpenCode. If the agent reports its workspace through MCP *roots* and the server was started elsewhere, ImgSwitch uses that workspace instead. Roots only work with agents on MCP protocol versions before 2026-07-28, so the tool also asks agents to pass an absolute `output_dir` when their working folder isn't the project.
+- **History** records which agent made each image. It uses the name the agent reports, or else the process that started the server. The History page can filter by agent.
+- **Image previews.** If an agent can't handle image results, turn off *Show images to the agent* in Settings to return file paths only.
+- **Permissions** are each agent's own business. The Agents page can allow ImgSwitch's tools for Claude Code; the other agents ask (or don't) according to their own approval settings.
+- **After updating ImgSwitch,** every agent session that was already running keeps the old server until it reloads it. The Agents page lists the outdated servers, with the agent that runs each one.
 
 ---
 
@@ -329,7 +387,7 @@ Claude fills in the tool parameters from your request:
 | `negative_prompt` | string | Things to avoid. Used by A1111, ComfyUI and Unsloth Studio (on models that support it); ignored by OpenAI-compatible APIs. |
 | `n` | 1–4 | Number of images. DALL·E 3 only supports `n = 1`. |
 | `seed` | integer | Reproducible results on local backends. |
-| `provider` | `openai` / `a1111` / `comfyui` / `unsloth` | Use this backend for this one call instead of the active one. It must be ticked *Available to Claude*. The tool's description tells Claude what each backend is and where its model comes from. |
+| `provider` | `openai` / `a1111` / `comfyui` / `unsloth` | Use this backend for this one call instead of the active one. It must be switched to *Available to agents*. The tool's description tells Claude what each backend is and where its model comes from. |
 | `output_dir` | path | Folder to save in, e.g. `assets/img`. Relative paths are inside the folder Claude Code is working in, and the folder is created if needed. Defaults to the output folder set in the app. |
 | `filename` | string | File name without extension, e.g. `hero`. With `n > 1` it becomes `hero-1`, `hero-2`, …. Defaults to `<timestamp>-<prompt>-<n>`. |
 
@@ -342,7 +400,7 @@ Generated 1 image(s) with OpenAI-compatible API (dall-e-3) at 1792x1024:
 
 Where files go:
 
-- **By default**, into the folder Claude Code is working in (Settings → *Output folder for Claude Code*, `.`).
+- **By default**, into the folder Claude Code is working in (Settings → *Output folder for agents*, `.`).
 - **When you say where**, e.g. "save it to `docs/figures`" or "call it `logo`", Claude passes `output_dir` / `filename` and the file goes exactly there.
 - **Existing files are never overwritten.** If `hero.png` exists, the new image is saved as `hero-2.png`.
 - The folder is created **before** the image is generated, so a bad path fails immediately instead of after a paid cloud generation.
@@ -355,22 +413,22 @@ Each backend runs a different model: OpenAI uses the model set in the app, Unslo
 2. **A named model, through `list_backends`.** If you ask for a model or backend, e.g. "use Qwen-Image-2.1", Claude calls `list_backends` and passes the backend that runs it as `provider`.
 3. **Never an automatic switch.** If the model you asked for isn't available, Claude tells you instead of falling back to another backend, so a request for a local model never ends up on a paid cloud API.
 
-Only backends switched to *Available to Claude* in the app take part. `list_backends` checks each one and returns text like this:
+Only backends switched to *Available to agents* in the app take part. `list_backends` checks each one and returns text like this:
 
 ```
 Active backend: unsloth (used when generate_image is called without provider)
 
 - openai: OpenAI-compatible API, available. Authenticated, model gpt-image-1
-  Cloud API: OpenAI or an OpenAI-compatible proxy. Uses the model set in the dashboard. Usually billed per image.
+  Cloud API: OpenAI or an OpenAI-compatible proxy. Uses the model set in the ImgSwitch app. Usually billed per image.
   Image input: yes, up to 16 images (gpt-image-1 edits by instruction)
 - comfyui: ComfyUI, unavailable. ComfyUI not reachable at http://127.0.0.1:8188. Is it running?
-  Local ComfyUI. Runs the dashboard's workflow with the checkpoint chosen there.
+  Local ComfyUI. Runs the workflow set in the ImgSwitch app, with the checkpoint chosen there.
   Image input: yes, 1 image via workflows/comfyui_img2img.json (img2img; strength applies)
 - unsloth [active]: Unsloth Studio, available. Connected, image model unsloth/Qwen-Image-2.1-Turbo-GGUF
   Local Unsloth Studio. Uses whichever image model is loaded in Studio's Images tab (e.g. Qwen-Image, FLUX, Z-Image, SDXL).
   Image input: yes, edit by instruction with up to 10 images (unsloth/Qwen-Image-2.1-Turbo-GGUF)
 
-Disabled in the dashboard (can't be used): a1111
+Disabled in the ImgSwitch app (can't be used): a1111
 ```
 
 You can also just ask Claude "which image backends are available?".
@@ -445,7 +503,7 @@ The error comes back to Claude word for word, e.g. *"Stable Diffusion WebUI not 
 | `dall-e-3 can't edit images` | Choose a gpt-image model (or dall-e-2) in the app, or edit on another backend |
 | `… in Unsloth Studio can't take an input image (workflows: txt2img)` | The loaded model only generates from text; load an edit model (e.g. Qwen-Image-2.1, Qwen-Image-Edit, FLUX.1 Kontext) in Studio's Images tab |
 | `… takes one input image, got 2` | A1111 and ComfyUI edit one image at a time; use an instruction-editing backend to combine several |
-| `The 'x' backend is disabled in the ImgSwitch dashboard` | Switch on *Available to Claude* on that backend's card, or ask for a model one of the available backends runs |
+| `The 'x' backend is disabled in the ImgSwitch app` | Switch on *Available to agents* on that backend's card, or ask for a model one of the available backends runs |
 | `HTTP 401: Incorrect API key` | Wrong or revoked key; use **Test connection** to check it |
 | `HTTP 400 … size` | That model doesn't support that size; pick one of its presets |
 | `… not found … --api` | Restart the WebUI with `--api` |
@@ -514,7 +572,7 @@ readlink /proc/<pid>/cwd                     # the folder that server's session 
       "api_key": "",
       "model": "dall-e-3",
       "response_format": "b64_json",        // "b64_json" | "url" | "omit"
-      "enabled": true,                      // "Available to Claude"; every backend has it, and the active one must be true
+      "enabled": true,                      // "Available to agents"; every backend has it, and the active one must be true
       "default_size": "1024x1024",
       "timeout": 120                        // seconds
     },
@@ -644,7 +702,7 @@ imgswitch/
   server.py                 MCP server: generate_image and list_backends
   service.py                generation pipeline and backend overview, shared by the tools and the app
   history.py                history.jsonl: every generation, from Claude or the Playground
-  claude_code.py            registration, tool permissions and running servers, read from Claude Code's files
+  agents.py                 the calling agent, and each agent's registration, Claude Code's permissions, running servers
   router.py                 picks the provider for a call
   inputs.py, output.py      loads input images; saves results and builds inline previews
   providers/                one adapter per backend (openai_compat, a1111, comfyui, unsloth)

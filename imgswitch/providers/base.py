@@ -68,7 +68,7 @@ class HealthStatus:
 class ImageProvider(ABC):
     name: ClassVar[str]
     label: ClassVar[str]
-    # Tells Claude what the backend is and where its model comes from (tool docs and list_backends).
+    # Tells the agent what the backend is and where its model comes from (tool docs and list_backends).
     description: ClassVar[str]
 
     def __init__(self, config):

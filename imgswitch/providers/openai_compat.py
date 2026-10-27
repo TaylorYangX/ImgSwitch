@@ -28,7 +28,7 @@ class OpenAICompatProvider(ImageProvider):
     name = "openai"
     label = "OpenAI-compatible API"
     description = (
-        "Cloud API: OpenAI or an OpenAI-compatible proxy. Uses the model set in the dashboard. Usually billed per image."
+        "Cloud API: OpenAI or an OpenAI-compatible proxy. Uses the model set in the ImgSwitch app. Usually billed per image."
     )
 
     @property
@@ -62,7 +62,7 @@ class OpenAICompatProvider(ImageProvider):
     def _check_edit(self, req: GenerationRequest) -> None:
         model = self.config.model
         if DALLE3_RE.search(model):
-            raise ProviderError(f"{model} can't edit images; choose a gpt-image model (or dall-e-2) in the dashboard")
+            raise ProviderError(f"{model} can't edit images; choose a gpt-image model (or dall-e-2) in the ImgSwitch app")
         if DALLE2_RE.search(model) and len(req.images) > 1:
             raise ProviderError("dall-e-2 edits take one input image")
 

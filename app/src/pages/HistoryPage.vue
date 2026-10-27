@@ -2,10 +2,10 @@
 import { Copy, FolderOpen, ImageOff, ImagePlus, RefreshCw, Search, Trash2 } from '@lucide/vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { api, historyImageUrl, PROVIDER_NAMES, type HistoryEntry } from '../api'
+import { AGENT_LABELS, api, historyImageUrl, PROVIDER_NAMES, type HistoryEntry } from '../api'
 import PageHeader from '../components/PageHeader.vue'
 import SideDrawer from '../components/SideDrawer.vue'
-import { basename, dateTime, timeAgo } from '../format'
+import { basename, dateTime, sourceLabel, timeAgo } from '../format'
 import { copyText, revealPath } from '../platform'
 import { confirmDialog, navigate, store, toast } from '../store'
 
@@ -15,7 +15,8 @@ const items = ref<HistoryEntry[]>([])
 const total = ref(0)
 const loading = ref(false)
 const query = ref('')
-const source = ref<'' | 'claude' | 'playground'>('')
+const source = ref('')
+const sources = ['playground', 'claude', 'codex', 'opencode', 'antigravity']
 const backend = ref('')
 const selected = ref<HistoryEntry | null>(null)
 let searchTimer: ReturnType<typeof setTimeout> | undefined
@@ -87,17 +88,10 @@ async function remove(entry: HistoryEntry) {
         <Search class="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" />
         <input class="input pl-9" v-model="query" :placeholder="$t('history.searchPlaceholder')" />
       </div>
-      <div class="flex rounded-lg border border-zinc-300 bg-white p-0.5 dark:border-zinc-700 dark:bg-zinc-900">
-        <button
-          v-for="s in ['', 'claude', 'playground'] as const"
-          :key="s"
-          type="button"
-          :class="['rounded-md px-3 py-1.5 text-xs font-medium transition', source === s ? 'bg-indigo-600 text-white' : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800']"
-          @click="source = s"
-        >
-          {{ $t(`history.source.${s || 'all'}`) }}
-        </button>
-      </div>
+      <select class="input w-auto!" v-model="source">
+        <option value="">{{ $t('history.allSources') }}</option>
+        <option v-for="s in sources" :key="s" :value="s">{{ s === 'playground' ? $t('history.source.playground') : AGENT_LABELS[s] }}</option>
+      </select>
       <select class="input w-auto!" v-model="backend">
         <option value="">{{ $t('history.allBackends') }}</option>
         <option v-for="n in PROVIDER_NAMES" :key="n" :value="n">{{ $t(`backends.names.${n}`) }}</option>
@@ -129,7 +123,7 @@ async function remove(entry: HistoryEntry) {
           />
           <div v-else class="grid h-full place-items-center text-xs text-zinc-400"><ImageOff class="h-6 w-6" /></div>
           <span class="badge absolute top-2 left-2 bg-white/90 text-zinc-700 shadow-sm dark:bg-zinc-900/90 dark:text-zinc-300">
-            {{ $t(`history.source.${entry.source ?? 'claude'}`) }}
+            {{ sourceLabel(entry.source) }}
           </span>
           <span v-if="(entry.outputs?.length ?? 0) > 1" class="badge absolute top-2 right-2 bg-zinc-900/75 text-white">×{{ entry.outputs!.length }}</span>
         </div>
@@ -185,7 +179,7 @@ async function remove(entry: HistoryEntry) {
               <dd>{{ selected.strength }}</dd>
             </template>
             <dt class="text-zinc-500 dark:text-zinc-400">{{ $t('history.sourceLabel') }}</dt>
-            <dd>{{ $t(`history.source.${selected.source ?? 'claude'}`) }}</dd>
+            <dd>{{ sourceLabel(selected.source) }}<span v-if="selected.client" class="mono text-zinc-500"> ({{ selected.client }})</span></dd>
             <dt class="text-zinc-500 dark:text-zinc-400">{{ $t('history.folder') }}</dt>
             <dd class="mono break-all">{{ selected.cwd }}</dd>
             <template v-if="selected.inputs?.length">

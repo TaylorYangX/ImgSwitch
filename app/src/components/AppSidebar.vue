@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Check, ChevronsUpDown, CircleAlert, History, Images, LoaderCircle, Server, Settings, SquareTerminal, WandSparkles } from '@lucide/vue'
+import { Bot, Check, ChevronsUpDown, CircleAlert, History, Images, LoaderCircle, Server, Settings, WandSparkles } from '@lucide/vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { ProviderName } from '../api'
 import { PROVIDER_NAMES } from '../api'
@@ -10,7 +10,7 @@ const nav: { page: Page; icon: unknown }[] = [
   { page: 'backends', icon: Server },
   { page: 'playground', icon: WandSparkles },
   { page: 'history', icon: History },
-  { page: 'claude', icon: SquareTerminal },
+  { page: 'agents', icon: Bot },
   { page: 'settings', icon: Settings },
 ]
 

@@ -15,7 +15,7 @@ def get_provider(cfg: AppConfig, name: str | None = None) -> ImageProvider:
     config = getattr(cfg.providers, name)
     if not config.enabled:
         raise ProviderError(
-            f"The {name!r} backend is disabled in the ImgSwitch dashboard. "
+            f"The {name!r} backend is disabled in the ImgSwitch app. "
             f"Available: {', '.join(cfg.enabled_providers())}. Call list_backends to see what each runs."
         )
     return cls(config)

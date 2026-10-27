@@ -1,6 +1,6 @@
 {
   "app": {
-    "tagline": "Claude Code 的图像后端",
+    "tagline": "AI 编程智能体的图像后端",
     "starting": "正在启动 ImgSwitch…",
     "backendDown": "无法连接 ImgSwitch 后端",
     "retry": "重试"
@@ -9,11 +9,17 @@
     "backends": "后端",
     "playground": "创作台",
     "history": "历史记录",
-    "claude": "Claude Code",
+    "agents": "智能体",
     "settings": "设置"
   },
-  "switcher": { "label": "当前后端" },
-  "save": { "saving": "正在保存…", "saved": "所有更改已保存", "error": "未保存：{error}" },
+  "switcher": {
+    "label": "当前后端"
+  },
+  "save": {
+    "saving": "正在保存…",
+    "saved": "所有更改已保存",
+    "error": "未保存：{error}"
+  },
   "common": {
     "refresh": "刷新",
     "test": "测试",
@@ -31,7 +37,7 @@
     "copied": "已复制到剪贴板"
   },
   "backends": {
-    "subtitle": "Claude 默认使用当前后端；当你指定的模型由其他可用后端运行时，它会改用那个后端。",
+    "subtitle": "智能体默认使用当前后端；当你指定的模型由其他可用后端运行时，会改用那个后端。",
     "names": {
       "openai": "OpenAI 兼容接口",
       "a1111": "Stable Diffusion WebUI",
@@ -41,15 +47,15 @@
     "cloud": "云端",
     "local": "本地",
     "imageInput": "图像输入",
-    "available": "Claude 可用",
-    "notAvailable": "Claude 不可用",
-    "availableHint": "是否允许 Claude 使用此后端",
+    "available": "可供智能体使用",
+    "notAvailable": "对智能体隐藏",
+    "availableHint": "是否允许智能体使用此后端",
     "activeLocked": "当前后端始终可用；请先将其他后端设为当前",
     "setActive": "设为当前",
     "editTitle": "{name} 设置",
     "testConnection": "测试连接",
     "autosave": "更改会自动保存",
-    "footnote": "窗口可见时每 30 秒检查一次状态。更改会在 Claude 下次生成图像时生效，无需重启。"
+    "footnote": "窗口可见时每 30 秒检查一次状态。更改会在智能体下次生成图像时生效，无需重启。"
   },
   "forms": {
     "defaultSize": "默认尺寸",
@@ -65,7 +71,7 @@
     "openai": {
       "baseUrl": "API 基础地址",
       "baseUrlHint": "任何实现了 POST /images/generations（编辑图像还需 /images/edits）的接口均可。",
-      "keyEnv": "当前环境中设置了 {name}。如果 Claude Code 的环境中也有它，将覆盖此处的密钥。",
+      "keyEnv": "当前环境中设置了 {name}。如果智能体的环境中也有它，将覆盖此处的密钥。",
       "model": "模型",
       "customModel": "自定义模型名称…",
       "modelsLoading": "正在加载此密钥可用的模型…",
@@ -95,7 +101,7 @@
       "workflow": "工作流文件",
       "workflowHint": "API 格式的工作流 JSON，路径相对于 ImgSwitch 文件夹。占位符：",
       "editWorkflow": "编辑工作流文件",
-      "editWorkflowHint": "Claude 编辑已有图像时使用。占位符与上面相同，另加"
+      "editWorkflowHint": "智能体编辑已有图像时使用。占位符与上面相同，另加"
     },
     "unsloth": {
       "url": "Unsloth Studio 地址",
@@ -141,13 +147,16 @@
     "done": "已生成 {n} 张图像，用时 {s} 秒"
   },
   "history": {
-    "subtitle": "ImgSwitch 生成的每一张图像，来自 Claude Code 或创作台。",
+    "subtitle": "ImgSwitch 生成的每一张图像，来自你的智能体或创作台。",
     "searchPlaceholder": "搜索提示词、模型、文件夹…",
-    "source": { "all": "全部", "claude": "Claude Code", "playground": "创作台" },
+    "source": {
+      "playground": "创作台",
+      "agent": "智能体"
+    },
     "allBackends": "全部后端",
     "count": "共 {n} 条",
     "emptyTitle": "还没有图像",
-    "emptyText": "Claude 通过 ImgSwitch 生成的图像，以及你在创作台中生成的图像，都会显示在这里。",
+    "emptyText": "智能体通过 ImgSwitch 生成的图像，以及你在创作台中生成的图像，都会显示在这里。",
     "loadMore": "加载更多",
     "details": "图像详情",
     "missing": "此文件已被移动或删除。",
@@ -164,23 +173,31 @@
     "inputs": "输入图像",
     "remove": "从历史记录中移除",
     "removeConfirm": "要从历史记录中移除这一条吗？图像文件会保留在原处。",
-    "removed": "已从历史记录中移除"
+    "removed": "已从历史记录中移除",
+    "allSources": "全部来源",
+    "client": "客户端"
   },
-  "claude": {
-    "subtitle": "Claude Code 与 ImgSwitch 的连接情况。",
-    "registration": {
-      "title": "注册",
-      "ok": "ImgSwitch 已在用户范围注册，在所有文件夹中都可用。",
-      "missing": "ImgSwitch 还没有在 Claude Code 中注册。",
-      "broken": "有一条注册指向不存在的程序，因此无法启动。",
-      "elsewhere": "ImgSwitch 已注册，但不在用户范围，或指向的不是这份 ImgSwitch。",
-      "scope": { "user": "用户范围", "local": "本地范围" },
-      "commandMissing": "找不到命令",
-      "otherCopy": "另一份副本",
-      "register": "在用户范围注册",
-      "registerHint": "使用 claude 命令行执行上面的命令。之后请开启新的 Claude Code 会话。",
-      "cliMissing": "未找到 claude 命令行；请在终端中运行上面的命令。",
-      "done": "已注册。新的 Claude Code 会话中即可使用 ImgSwitch。"
+  "agents": {
+    "subtitle": "可以使用 ImgSwitch 的编程智能体，以及它们正在运行的 ImgSwitch 服务。",
+    "installed": "已安装",
+    "notInstalled": "此电脑上未找到",
+    "registered": "已注册",
+    "notRegistered": "未注册",
+    "commandMissing": "找不到命令",
+    "otherCopy": "另一份副本",
+    "config": "配置",
+    "where": {
+      "user": "用户范围",
+      "local": "本地范围"
+    },
+    "register": "注册 ImgSwitch",
+    "registered_done": "已在 {agent} 中注册。",
+    "showConfig": "手动添加的配置",
+    "reload": {
+      "claude": "开启新的 Claude Code 会话，或在已打开的会话中运行 /mcp → Reconnect。",
+      "codex": "开启新的 Codex 会话即可加载。",
+      "opencode": "重启 OpenCode 即可加载；opencode mcp list 可查看是否连接成功。",
+      "antigravity": "在 Antigravity 中：Settings → Customizations → Installed MCP Servers → Refresh。"
     },
     "permissions": {
       "title": "工具权限",
@@ -193,14 +210,16 @@
     },
     "servers": {
       "title": "正在运行的 ImgSwitch 服务",
-      "desc": "每个打开的 Claude Code 会话一个，都在运行当前版本。",
-      "outdatedHint": "有 {n} 个服务在 ImgSwitch 上次更新之前启动。请在对应文件夹打开的 Claude Code 会话中运行 /mcp，选择 imgswitch，然后选择 Reconnect。",
+      "desc": "每个打开的智能体会话一个，都在运行当前版本。",
+      "outdatedHint": "有 {n} 个服务在 ImgSwitch 上次更新之前启动。请在这些会话中重新加载 ImgSwitch（方法见上方各智能体）。",
+      "agent": "智能体",
       "folder": "会话文件夹",
       "started": "启动时间",
       "status": "状态",
-      "outdated": "已过期：需重连",
+      "outdated": "已过期：需重新加载",
       "current": "最新",
-      "none": "目前没有 Claude Code 会话在运行 ImgSwitch。",
+      "unknown": "未知",
+      "none": "目前没有智能体会话在运行 ImgSwitch。",
       "codeUpdated": "ImgSwitch 代码最后更新于 {time}。"
     }
   },
@@ -209,13 +228,17 @@
     "appearance": "外观",
     "language": "语言",
     "theme": "主题",
-    "themes": { "system": "跟随系统", "light": "浅色", "dark": "深色" },
+    "themes": {
+      "system": "跟随系统",
+      "light": "浅色",
+      "dark": "深色"
+    },
     "output": {
       "title": "输出",
-      "folder": "Claude Code 的输出文件夹",
-      "folderHint": "相对路径位于 Claude Code 当前工作的文件夹内（\".\" 即该文件夹本身）。使用绝对路径可把所有图像集中到一处。Claude 也可以按请求指定文件夹。",
-      "inline": "向 Claude 展示图像",
-      "inlineHint": "Claude 会收到每张图像的预览。关闭后只返回文件路径，可减少 Claude 的上下文占用。",
+      "folder": "智能体的输出文件夹",
+      "folderHint": "相对路径位于智能体当前工作的文件夹内（\".\" 即该文件夹本身）。使用绝对路径可把所有图像集中到一处。智能体也可以按请求指定文件夹。",
+      "inline": "向智能体展示图像",
+      "inlineHint": "智能体会收到每张图像的预览。关闭后只返回文件路径，可减少上下文占用；如果某个智能体无法处理图像，也可以关闭此项。",
       "inlineMax": "预览长边（像素）",
       "playground": "创作台文件夹",
       "playgroundHint": "在创作台中生成的图像保存在这里。"

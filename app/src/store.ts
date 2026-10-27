@@ -2,8 +2,8 @@
 import { nextTick, reactive, watch } from 'vue'
 import { api, type BackendInfo, type Config, type Meta, type ProviderName } from './api'
 
-export type Page = 'backends' | 'playground' | 'history' | 'claude' | 'settings'
-export const PAGES: Page[] = ['backends', 'playground', 'history', 'claude', 'settings']
+export type Page = 'backends' | 'playground' | 'history' | 'agents' | 'settings'
+export const PAGES: Page[] = ['backends', 'playground', 'history', 'agents', 'settings']
 
 export interface Toast {
   id: number
@@ -51,7 +51,8 @@ export function navigate(page: Page): void {
 }
 
 function pageFromHash(): void {
-  const page = location.hash.replace(/^#\/?/, '') as Page
+  const hash = location.hash.replace(/^#\/?/, '')
+  const page = (hash === 'claude' ? 'agents' : hash) as Page // the page was called Claude Code before
   if (PAGES.includes(page)) store.page = page
 }
 

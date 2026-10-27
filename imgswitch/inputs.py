@@ -8,6 +8,8 @@ import math
 from PIL import Image, UnidentifiedImageError
 
 from imgswitch.config import resolve_output_dir
+from pathlib import Path
+
 from imgswitch.providers.base import InputImage
 
 MAX_INPUT_BYTES = 50 * 1024 * 1024
@@ -15,13 +17,13 @@ MAX_INPUT_BYTES = 50 * 1024 * 1024
 KEEP_FORMATS = {"PNG": "image/png", "JPEG": "image/jpeg", "WEBP": "image/webp"}
 
 
-def load_input_images(paths: list[str]) -> list[InputImage]:
-    return [_load(p) for p in paths]
+def load_input_images(paths: list[str], base: Path | None = None) -> list[InputImage]:
+    return [_load(p, base) for p in paths]
 
 
-def _load(p: str) -> InputImage:
-    # Same rule as output folders: relative to the folder the calling session runs in.
-    path = resolve_output_dir(p)
+def _load(p: str, base: Path | None) -> InputImage:
+    # Same rule as output folders: relative to the calling agent's workspace.
+    path = resolve_output_dir(p, base)
     if not path.is_file():
         raise ValueError(f"Input image not found: {path}")
     if path.stat().st_size > MAX_INPUT_BYTES:

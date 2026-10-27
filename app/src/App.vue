@@ -7,14 +7,14 @@ import ConfirmDialog from './components/ConfirmDialog.vue'
 import ToastStack from './components/ToastStack.vue'
 import { setLanguage } from './i18n'
 import BackendsPage from './pages/BackendsPage.vue'
-import ClaudePage from './pages/ClaudePage.vue'
+import AgentsPage from './pages/AgentsPage.vue'
 import HistoryPage from './pages/HistoryPage.vue'
 import PlaygroundPage from './pages/PlaygroundPage.vue'
 import SettingsPage from './pages/SettingsPage.vue'
 import { loadAll, store } from './store'
 import { setTheme } from './theme'
 
-const pages = { backends: BackendsPage, playground: PlaygroundPage, history: HistoryPage, claude: ClaudePage, settings: SettingsPage }
+const pages = { backends: BackendsPage, playground: PlaygroundPage, history: HistoryPage, agents: AgentsPage, settings: SettingsPage }
 
 watch(() => store.cfg?.ui.language, (lang) => lang && setLanguage(lang), { immediate: true })
 watch(() => store.cfg?.ui.theme, (theme) => setTheme(theme ?? 'system'), { immediate: true })

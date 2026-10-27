@@ -5,6 +5,7 @@ from pathlib import Path
 
 import respx
 from mcp.client import Client
+from mcp_types import Implementation, ListRootsResult, Root
 from PIL import Image
 
 from imgswitch.config import load_config, save_config
@@ -35,6 +36,7 @@ async def test_tool_is_listed(config_file):
     assert all(f"{name}:" in provider_help for name in ("openai", "a1111", "comfyui", "unsloth"))
     assert "loaded in Studio's Images tab" in provider_help and "list_backends" in provider_help
     assert props["input_images"]["anyOf"][0]["type"] == "array" and "strength" in props
+    assert "ctx" not in props  # the MCP context is injected, not a tool argument
 
 
 @respx.mock
@@ -218,7 +220,7 @@ async def test_list_backends(config_file):
     assert "- unsloth [active]: Unsloth Studio, available. Connected, image model unsloth/Qwen-Image-2.1-Turbo-GGUF" in text
     assert "- a1111: Stable Diffusion WebUI, available. Connected, checkpoint sdxl_base" in text
     assert "- openai: OpenAI-compatible API, unavailable. No API key configured" in text
-    assert "Disabled in the dashboard (can't be used): comfyui" in text
+    assert "Disabled in the ImgSwitch app (can't be used): comfyui" in text
     assert "Image input: yes, edit by instruction with up to 10 images (unsloth/Qwen-Image-2.1-Turbo-GGUF)" in text
     assert "Image input: yes, 1 image (img2img; strength applies)" in text  # a1111
     assert "Image input: no (dall-e-3 can't edit images)" in text
@@ -280,10 +282,66 @@ async def test_tool_calls_are_recorded_in_history(config_file, png):
     use_provider(config_file, "a1111", return_inline=False)
     respx.post(TXT2IMG).respond(json={"images": [b64(png)]})
 
-    async with Client(mcp) as client:
+    async with Client(mcp, client_info=Implementation(name="claude-code", version="2.1.310")) as client:
         result = await client.call_tool("generate_image", {"prompt": "a lighthouse", "seed": 9})
 
     [entry] = history.list_entries()[0]
     assert (entry["source"], entry["backend"], entry["prompt"], entry["seed"]) == ("claude", "a1111", "a lighthouse", 9)
+    assert entry["client"] == "claude-code 2.1.310"
     assert entry["outputs"] == [result.content[0].text.splitlines()[1].removeprefix("- ")]
     assert entry["cwd"] == str(Path.cwd())
+
+
+@respx.mock
+async def test_other_agents_are_recorded_by_name(config_file, png):
+    from imgswitch import history
+
+    use_provider(config_file, "a1111", return_inline=False)
+    respx.post(TXT2IMG).respond(json={"images": [b64(png)]})
+    async with Client(mcp, client_info=Implementation(name="codex-mcp-client", version="0.130.0")) as client:
+        await client.call_tool("generate_image", {"prompt": "x"})
+    assert history.list_entries()[0][0]["source"] == "codex"
+
+
+def _roots(*paths):
+    async def list_roots(context):
+        return ListRootsResult(roots=[Root(uri=p.as_uri()) for p in paths])
+
+    return list_roots
+
+
+@respx.mock
+async def test_relative_output_goes_to_the_agents_workspace(config_file, png, tmp_path, monkeypatch):
+    """An agent that runs the server outside the project (e.g. one server for many workspaces) names its root.
+
+    Only agents on the initialize handshake can be asked for roots; 2026-07-28 has no back-channel.
+    """
+    use_provider(config_file, "a1111", dir=".", return_inline=False)
+    respx.post(TXT2IMG).respond(json={"images": [b64(png)]})
+    elsewhere, workspace = tmp_path / "server-cwd", tmp_path / "my project"
+    elsewhere.mkdir()
+    workspace.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    async with Client(mcp, list_roots_callback=_roots(workspace), mode="legacy") as client:
+        legacy = await client.call_tool("generate_image", {"prompt": "fox", "output_dir": "figures", "filename": "fox"})
+    async with Client(mcp, list_roots_callback=_roots(workspace)) as client:  # newest protocol: no roots
+        modern = await client.call_tool("generate_image", {"prompt": "fox", "output_dir": "figures", "filename": "fox"})
+
+    assert not legacy.is_error and not modern.is_error, modern.content[0].text
+    assert saved_paths(legacy) == [workspace / "figures" / "fox.png"]
+    assert saved_paths(modern) == [elsewhere / "figures" / "fox.png"]
+
+
+@respx.mock
+async def test_cwd_inside_a_root_is_kept(config_file, png, tmp_path, monkeypatch):
+    use_provider(config_file, "a1111", dir=".", return_inline=False)
+    respx.post(TXT2IMG).respond(json={"images": [b64(png)]})
+    project = tmp_path / "project"
+    (project / "sub").mkdir(parents=True)
+    monkeypatch.chdir(project / "sub")
+
+    async with Client(mcp, list_roots_callback=_roots(project), mode="legacy") as client:
+        result = await client.call_tool("generate_image", {"prompt": "fox", "filename": "fox"})
+
+    assert saved_paths(result) == [project / "sub" / "fox.png"]

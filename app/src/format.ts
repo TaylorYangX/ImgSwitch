@@ -1,4 +1,12 @@
+import { AGENT_LABELS } from './api'
 import { i18n } from './i18n'
+
+/** Who made a history entry: the Playground, a known agent, or whatever name an unknown agent gave. */
+export function sourceLabel(source: string | undefined): string {
+  if (!source) return AGENT_LABELS.claude // entries from before agents were told apart all came from Claude Code
+  if (source === 'playground') return i18n.global.t('history.source.playground')
+  return AGENT_LABELS[source] ?? source
+}
 
 /** "3 minutes ago" style time, in the interface language. */
 export function timeAgo(epochSeconds: number): string {

@@ -1,6 +1,6 @@
 {
   "app": {
-    "tagline": "Image backends for Claude Code",
+    "tagline": "Image backends for AI coding agents",
     "starting": "Starting ImgSwitch…",
     "backendDown": "Can't reach the ImgSwitch backend",
     "retry": "Try again"
@@ -9,11 +9,17 @@
     "backends": "Backends",
     "playground": "Playground",
     "history": "History",
-    "claude": "Claude Code",
+    "agents": "Agents",
     "settings": "Settings"
   },
-  "switcher": { "label": "Active backend" },
-  "save": { "saving": "Saving…", "saved": "All changes saved", "error": "Not saved: {error}" },
+  "switcher": {
+    "label": "Active backend"
+  },
+  "save": {
+    "saving": "Saving…",
+    "saved": "All changes saved",
+    "error": "Not saved: {error}"
+  },
   "common": {
     "refresh": "Refresh",
     "test": "Test",
@@ -31,7 +37,7 @@
     "copied": "Copied to the clipboard"
   },
   "backends": {
-    "subtitle": "Claude uses the active backend unless you ask for a model another available backend runs.",
+    "subtitle": "Agents use the active backend unless you ask for a model another available backend runs.",
     "names": {
       "openai": "OpenAI-compatible",
       "a1111": "Stable Diffusion WebUI",
@@ -41,15 +47,15 @@
     "cloud": "Cloud",
     "local": "Local",
     "imageInput": "Image input",
-    "available": "Available to Claude",
-    "notAvailable": "Not available to Claude",
-    "availableHint": "Whether Claude may use this backend",
+    "available": "Available to agents",
+    "notAvailable": "Hidden from agents",
+    "availableHint": "Whether agents may use this backend",
     "activeLocked": "The active backend is always available; make another one active first",
     "setActive": "Make active",
     "editTitle": "{name} settings",
     "testConnection": "Test connection",
     "autosave": "Changes save automatically",
-    "footnote": "Status is checked every 30 seconds while the window is visible. Changes reach Claude on its next image, with no restart."
+    "footnote": "Status is checked every 30 seconds while the window is visible. Changes reach agents on their next image, with no restart."
   },
   "forms": {
     "defaultSize": "Default size",
@@ -65,7 +71,7 @@
     "openai": {
       "baseUrl": "API base URL",
       "baseUrlHint": "Any endpoint that implements POST /images/generations (and /images/edits for editing).",
-      "keyEnv": "{name} is set in this environment. If Claude Code's environment has it too, it overrides this field.",
+      "keyEnv": "{name} is set in this environment. If an agent's environment has it too, it overrides this field.",
       "model": "Model",
       "customModel": "Custom model name…",
       "modelsLoading": "Loading the models available to this key…",
@@ -95,7 +101,7 @@
       "workflow": "Workflow file",
       "workflowHint": "API-format workflow JSON, relative to the ImgSwitch folder. Placeholders:",
       "editWorkflow": "Edit workflow file",
-      "editWorkflowHint": "Used when Claude edits an existing image. The same placeholders, plus"
+      "editWorkflowHint": "Used when an agent edits an existing image. The same placeholders, plus"
     },
     "unsloth": {
       "url": "Unsloth Studio URL",
@@ -141,13 +147,16 @@
     "done": "{n} image(s) ready in {s}s"
   },
   "history": {
-    "subtitle": "Every image ImgSwitch made, from Claude Code or the Playground.",
+    "subtitle": "Every image ImgSwitch made, from your agents or the Playground.",
     "searchPlaceholder": "Search prompts, models, folders…",
-    "source": { "all": "All", "claude": "Claude Code", "playground": "Playground" },
+    "source": {
+      "playground": "Playground",
+      "agent": "Agent"
+    },
     "allBackends": "All backends",
     "count": "{n} entries",
     "emptyTitle": "No images yet",
-    "emptyText": "Images Claude generates with ImgSwitch, or that you make in the Playground, show up here.",
+    "emptyText": "Images your agents generate with ImgSwitch, or that you make in the Playground, show up here.",
     "loadMore": "Load more",
     "details": "Image details",
     "missing": "This file has been moved or deleted.",
@@ -164,23 +173,31 @@
     "inputs": "Input images",
     "remove": "Remove from history",
     "removeConfirm": "Remove this entry from the history? The image files stay where they are.",
-    "removed": "Removed from history"
+    "removed": "Removed from history",
+    "allSources": "All sources",
+    "client": "Client"
   },
-  "claude": {
-    "subtitle": "How Claude Code is connected to ImgSwitch.",
-    "registration": {
-      "title": "Registration",
-      "ok": "ImgSwitch is registered in user scope, so it's available in every folder.",
-      "missing": "ImgSwitch isn't registered with Claude Code yet.",
-      "broken": "A registration points to a program that doesn't exist, so it can't start.",
-      "elsewhere": "ImgSwitch is registered, but not in user scope or not for this copy of ImgSwitch.",
-      "scope": { "user": "User scope", "local": "Local scope" },
-      "commandMissing": "Command not found",
-      "otherCopy": "Another copy",
-      "register": "Register in user scope",
-      "registerHint": "Runs the command above with the claude CLI. Start a new Claude Code session afterwards.",
-      "cliMissing": "The claude CLI wasn't found; run the command above in a terminal.",
-      "done": "Registered. New Claude Code sessions now have ImgSwitch."
+  "agents": {
+    "subtitle": "The coding agents that can use ImgSwitch, and the ImgSwitch servers they're running.",
+    "installed": "Installed",
+    "notInstalled": "Not found on this computer",
+    "registered": "Registered",
+    "notRegistered": "Not registered",
+    "commandMissing": "Command not found",
+    "otherCopy": "Another copy",
+    "config": "Config",
+    "where": {
+      "user": "User scope",
+      "local": "Local scope"
+    },
+    "register": "Register ImgSwitch",
+    "registered_done": "Registered with {agent}.",
+    "showConfig": "Config to add by hand",
+    "reload": {
+      "claude": "Start a new Claude Code session, or run /mcp → Reconnect in an open one.",
+      "codex": "Start a new Codex session to load it.",
+      "opencode": "Restart OpenCode to load it; opencode mcp list shows whether it connects.",
+      "antigravity": "In Antigravity: Settings → Customizations → Installed MCP Servers → Refresh."
     },
     "permissions": {
       "title": "Tool permissions",
@@ -193,14 +210,16 @@
     },
     "servers": {
       "title": "Running ImgSwitch servers",
-      "desc": "One per open Claude Code session. All run the current version.",
-      "outdatedHint": "{n} server(s) started before ImgSwitch was last updated. In the Claude Code session open in that folder, run /mcp, select imgswitch, and choose Reconnect.",
+      "desc": "One per open agent session. All run the current version.",
+      "outdatedHint": "{n} server(s) started before ImgSwitch was last updated. Reload ImgSwitch in those sessions (see each agent above).",
+      "agent": "Agent",
       "folder": "Session folder",
       "started": "Started",
       "status": "Status",
-      "outdated": "Outdated: reconnect",
+      "outdated": "Outdated: reload",
       "current": "Up to date",
-      "none": "No Claude Code session is running ImgSwitch right now.",
+      "unknown": "Unknown",
+      "none": "No agent session is running ImgSwitch right now.",
       "codeUpdated": "ImgSwitch code last changed {time}."
     }
   },
@@ -209,13 +228,17 @@
     "appearance": "Appearance",
     "language": "Language",
     "theme": "Theme",
-    "themes": { "system": "System", "light": "Light", "dark": "Dark" },
+    "themes": {
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
     "output": {
       "title": "Output",
-      "folder": "Output folder for Claude Code",
-      "folderHint": "Relative paths are inside the folder Claude Code is working in (\".\" is that folder itself). Use an absolute path to collect every image in one place. Claude can also choose a folder per request.",
-      "inline": "Show images to Claude",
-      "inlineHint": "Claude gets a preview of each image. Turn off to return file paths only, which uses less of Claude's context.",
+      "folder": "Output folder for agents",
+      "folderHint": "Relative paths are inside the folder the agent is working in (\".\" is that folder itself). Use an absolute path to collect every image in one place. Agents can also choose a folder per request.",
+      "inline": "Show images to the agent",
+      "inlineHint": "The agent gets a preview of each image. Turn off to return file paths only, which uses less of its context; also try this if an agent can't handle images.",
       "inlineMax": "Preview long edge (px)",
       "playground": "Playground folder",
       "playgroundHint": "Where images made in the Playground are saved."

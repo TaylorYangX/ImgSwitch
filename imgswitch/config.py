@@ -138,14 +138,14 @@ def resolve_project_path(p: str) -> Path:
     return path if path.is_absolute() else PROJECT_ROOT / path
 
 
-def resolve_output_dir(p: str) -> Path:
-    """Resolve an output folder: relative to the working directory of the calling client.
+def resolve_output_dir(p: str, base: Path | None = None) -> Path:
+    """Resolve an output folder: relative to `base`, the calling agent's workspace (default: the cwd).
 
-    Claude Code starts stdio servers in the folder the session runs in, so "." is the
+    Agents start stdio servers in the folder the session runs in, so "." is usually the
     user's project.
     """
     path = Path(p).expanduser()
-    return (path if path.is_absolute() else Path.cwd() / path).resolve()
+    return (path if path.is_absolute() else (base or Path.cwd()) / path).resolve()
 
 
 def load_config(path: Path | None = None, *, apply_env: bool = True) -> AppConfig:

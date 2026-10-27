@@ -46,7 +46,7 @@ def fill_placeholders(node: Any, values: dict[str, Any]) -> Any:
 class ComfyUIProvider(ImageProvider):
     name = "comfyui"
     label = "ComfyUI"
-    description = "Local ComfyUI. Runs the dashboard's workflow with the checkpoint chosen there."
+    description = "Local ComfyUI. Runs the workflow set in the ImgSwitch app, with the checkpoint chosen there."
 
     @property
     def model_label(self) -> str:

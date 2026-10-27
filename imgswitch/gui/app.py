@@ -26,7 +26,7 @@ from PIL import Image, UnidentifiedImageError
 from pydantic import BaseModel, Field, ValidationError
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from imgswitch import PROJECT_ROOT, __version__, claude_code, history, service
+from imgswitch import PROJECT_ROOT, __version__, agents, history, service
 from imgswitch.config import (
     PROVIDER_NAMES,
     AppConfig,
@@ -170,7 +170,7 @@ def create_app(allowed_hosts: list[str] | None = None, app_mode: bool = False) -
             "app_mode": app_mode,
             "wsl": _is_wsl(),
             "api_key_env_var": _env_key_var(),
-            "claude_command": shlex.join(claude_code.register_command()),
+            "claude_command": shlex.join(agents.claude_register_command()),
         }
 
     @app.post("/api/providers/{name}/test")
@@ -301,17 +301,17 @@ def create_app(allowed_hosts: list[str] | None = None, app_mode: bool = False) -
             raise HTTPException(415, f"Can't read {path}: {e}") from None
         return Response(data, media_type="image/webp", headers={"Cache-Control": "max-age=86400"})
 
-    @app.get("/api/claude")
-    def claude_status() -> dict[str, Any]:
-        return claude_code.status()
+    @app.get("/api/agents")
+    def agents_status() -> dict[str, Any]:
+        return agents.status()
 
-    @app.post("/api/claude/register")
-    def claude_register() -> dict[str, Any]:
-        return claude_code.register()
+    @app.post("/api/agents/{key}/register")
+    def agent_register(key: Literal["claude", "codex", "opencode", "antigravity"]) -> dict[str, Any]:
+        return agents.register(key)
 
-    @app.post("/api/claude/permissions")
+    @app.post("/api/agents/claude/permissions")
     def claude_permissions() -> dict[str, Any]:
-        return claude_code.allow_tools()
+        return agents.claude_allow_tools()
 
     # The UI comes last, so that /api/* always wins.
     if (DIST_DIR / "index.html").is_file():

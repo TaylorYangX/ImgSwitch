@@ -110,7 +110,8 @@ export interface BackendInfo extends HealthStatus {
 export interface HistoryEntry {
   id: string
   time: number
-  source?: 'claude' | 'playground'
+  source?: string // 'playground', or the agent that asked: 'claude', 'codex', 'opencode', 'antigravity', …
+  client?: string | null
   backend?: ProviderName
   backend_label?: string
   model?: string
@@ -137,10 +138,17 @@ export interface GenerateResult {
   model: string
 }
 
+export type AgentKey = 'claude' | 'codex' | 'opencode' | 'antigravity'
+export const AGENT_LABELS: Record<string, string> = {
+  claude: 'Claude Code',
+  codex: 'Codex',
+  opencode: 'OpenCode',
+  antigravity: 'Antigravity',
+  gemini: 'Gemini CLI',
+}
+
 export interface Registration {
-  scope: 'user' | 'local'
-  project: string | null
-  type: string
+  where: string // 'user', 'local:<folder>' (Claude Code), or the config file it's in
   command: string
   args: string[]
   url: string | null
@@ -148,19 +156,28 @@ export interface Registration {
   points_here: boolean
 }
 
+export interface AgentStatus {
+  key: AgentKey
+  label: string
+  installed: boolean
+  config_path: string
+  registrations: Registration[]
+  registered: boolean
+  snippet: string
+  permissions?: { settings_path: string; allowed: Record<string, boolean> } // Claude Code only
+}
+
 export interface RunningServer {
   pid: number
+  agent: string | null
   cwd: string
   transport: string
   started_at: number
   outdated: boolean
 }
 
-export interface ClaudeStatus {
-  registrations: Registration[]
-  register_command: string[]
-  cli: string | null
-  permissions: { settings_path: string; allowed: Record<string, boolean> }
+export interface AgentsStatus {
+  agents: AgentStatus[]
   servers: RunningServer[]
   code_updated_at: number
 }

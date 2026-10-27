@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -53,11 +52,19 @@ async def generate(
     provider: str | None = None,
     output_dir: str | None = None,
     filename: str | None = None,
-    source: str = "claude",
+    source: str = "agent",
+    client: str | None = None,
+    base_dir: Path | None = None,
 ) -> GenerationResult:
+    """Generate (or edit) images and record them in the history.
+
+    `source` says who asked (an agent key such as "codex", or "playground"); relative paths resolve
+    against `base_dir`, the agent's workspace, which defaults to the cwd.
+    """
+    base_dir = base_dir or Path.cwd()
     try:
         backend = get_provider(cfg, provider)
-        inputs = load_input_images(input_images or [])
+        inputs = load_input_images(input_images or [], base_dir)
         if size or not inputs:
             width, height = parse_size(size or backend.config.default_size)
         else:
@@ -65,7 +72,7 @@ async def generate(
     except (ProviderError, ValueError) as e:
         raise GenerationError(str(e)) from e
     # Create the folder first so a bad path fails before a (possibly paid) generation.
-    out_dir = resolve_output_dir(output_dir or cfg.output.dir)
+    out_dir = resolve_output_dir(output_dir or cfg.output.dir, base_dir)
     try:
         out_dir.mkdir(parents=True, exist_ok=True)
     except OSError as e:
@@ -95,6 +102,7 @@ async def generate(
         raise GenerationError(f"Could not save images to {out_dir}: {e}") from e
     entry = history.record({
         "source": source,
+        "client": client,
         "backend": backend.name,
         "backend_label": backend.label,
         "model": backend.model_label,
@@ -107,7 +115,7 @@ async def generate(
         "strength": strength,
         "inputs": [img.path for img in inputs],
         "outputs": [str(p) for p in paths],
-        "cwd": os.getcwd(),
+        "cwd": str(base_dir),
     })
     return GenerationResult(backend, width, height, inputs, images, paths, entry["id"] if entry else None)
 

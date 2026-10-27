@@ -205,14 +205,23 @@ def test_backends_overview(client):
     assert not data[1]["ok"]
 
 
-def test_claude_endpoints(client, tmp_path, monkeypatch):
-    monkeypatch.setenv("IMGSWITCH_CLAUDE_JSON", str(tmp_path / "c.json"))
-    monkeypatch.setenv("IMGSWITCH_CLAUDE_SETTINGS", str(tmp_path / "settings.json"))
-    data = client.get("/api/claude").json()
-    assert data["registrations"] == [] and "imgswitch" in data["register_command"]
-    assert data["permissions"]["allowed"] == {"mcp__imgswitch__generate_image": False, "mcp__imgswitch__list_backends": False}
+def test_agents_endpoints(client, tmp_path, monkeypatch):
+    for var, name in [("CLAUDE_JSON", "c.json"), ("CLAUDE_SETTINGS", "settings.json"), ("CODEX_CONFIG", "codex.toml"),
+                      ("OPENCODE_CONFIG", "opencode.jsonc"), ("ANTIGRAVITY_CONFIG", "mcp_config.json")]:
+        monkeypatch.setenv(f"IMGSWITCH_{var}", str(tmp_path / name))
+    data = client.get("/api/agents").json()
+    assert [a["key"] for a in data["agents"]] == ["claude", "codex", "opencode", "antigravity"]
+    claude = data["agents"][0]
+    assert claude["registrations"] == [] and "imgswitch" in claude["snippet"]
+    assert claude["permissions"]["allowed"] == {"mcp__imgswitch__generate_image": False, "mcp__imgswitch__list_backends": False}
     assert isinstance(data["servers"], list)
-    assert all(client.post("/api/claude/permissions").json()["allowed"].values())
+
+    assert client.post("/api/agents/antigravity/register").json()["ok"]
+    assert client.post("/api/agents/codex/register").json()["ok"]
+    registered = {a["key"]: a["registered"] for a in client.get("/api/agents").json()["agents"]}
+    assert registered["antigravity"] and registered["codex"] and not registered["opencode"]
+    assert client.post("/api/agents/cursor/register").status_code == 422
+    assert all(client.post("/api/agents/claude/permissions").json()["allowed"].values())
 
 
 def test_meta(client):
